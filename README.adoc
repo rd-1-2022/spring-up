@@ -1,0 +1,52 @@
+= spring-up
+
+A Spring CLI focused on developer productivity
+
+== Build
+
+NOTE: Use either JDK11 or JDK17
+
+Normal build without _native_:
+```
+./gradlew clean build
+```
+
+Which you can then run with:
+```
+java -jar build/libs/spring-up-0.0.1-SNAPSHOT.jar
+```
+
+For native build:
+```
+./gradlew clean build nativeCompile
+```
+
+NOTE: You need to have `GRAALVM_HOME` pointing to your _graal_ installation
+
+Which you can then run with:
+```
+build/native/nativeCompile/spring-up
+```
+== Docs
+
+=== Generic Commands
+
+```
+$ build/native/nativeCompile/spring-up help
+AVAILABLE COMMANDS
+
+Built-In Commands
+        completion bash: Generate bash completion script
+        help: Display help about available commands.
+        history: Display or save the history of previously run commands
+        script: Read and execute commands from a file.
+        version: Show version info
+```
+
+=== Shell Completion
+
+Shell completion for `bash` can be generate with `completion bash` command:
+
+```
+$ source <(spring-up completion bash)
+```
