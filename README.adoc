@@ -27,6 +27,11 @@ Which you can then run with:
 ```
 build/native/nativeCompile/spring-up
 ```
+
+TIP: There is a CI workflow which builds native binaries for linux, macos and windows.
+     Published artifacts in CI workflow will get removed daily so take it from
+     a latest run which is scheduled nightly.
+
 == Docs
 
 === Generic Commands
