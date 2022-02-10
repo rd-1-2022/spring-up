@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class UpCliPropertiesTests {
 
 	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner();
@@ -29,7 +31,19 @@ public class UpCliPropertiesTests {
 		this.contextRunner
 				.withUserConfiguration(Config1.class)
 				.run((context) -> {
-					context.getBean(UpCliProperties.class);
+					UpCliProperties properties = context.getBean(UpCliProperties.class);
+					assertThat(properties.getInitializr().getBaseUrl()).isEqualTo("https://start.spring.io");
+				});
+	}
+
+	@Test
+	public void setProperties() {
+		this.contextRunner
+				.withPropertyValues("spring.up.initializr.base-url=fakeurl")
+				.withUserConfiguration(Config1.class)
+				.run((context) -> {
+					UpCliProperties properties = context.getBean(UpCliProperties.class);
+					assertThat(properties.getInitializr().getBaseUrl()).isEqualTo("fakeurl");
 				});
 	}
 

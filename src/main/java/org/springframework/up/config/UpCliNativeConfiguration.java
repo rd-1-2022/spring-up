@@ -33,6 +33,26 @@ import org.springframework.nativex.hint.ResourceHint;
 import org.springframework.nativex.hint.TypeAccess;
 import org.springframework.nativex.hint.TypeHint;
 import org.springframework.nativex.type.NativeConfiguration;
+import org.springframework.up.initializr.model.ArtifactId;
+import org.springframework.up.initializr.model.BootVersion;
+import org.springframework.up.initializr.model.Dependencies;
+import org.springframework.up.initializr.model.Dependency;
+import org.springframework.up.initializr.model.DependencyCategory;
+import org.springframework.up.initializr.model.Description;
+import org.springframework.up.initializr.model.GroupId;
+import org.springframework.up.initializr.model.IdName;
+import org.springframework.up.initializr.model.JavaVersion;
+import org.springframework.up.initializr.model.Language;
+import org.springframework.up.initializr.model.Metadata;
+import org.springframework.up.initializr.model.Name;
+import org.springframework.up.initializr.model.PackageName;
+import org.springframework.up.initializr.model.Packaging;
+import org.springframework.up.initializr.model.ProjectType;
+import org.springframework.up.initializr.model.Version;
+import org.springframework.up.initializr.model.JavaVersion.JavaVersionValues;
+import org.springframework.up.initializr.model.Language.LanguageValues;
+import org.springframework.up.initializr.model.Packaging.PackagingValues;
+import org.springframework.up.initializr.model.ProjectType.ProjectTypeValue;
 
 /**
  * {@code spring-native} configuration.
@@ -54,8 +74,11 @@ import org.springframework.nativex.type.NativeConfiguration;
 	types = {
 		@TypeHint(
 			types = {
-				CallbackReference.class, Native.class, NativeLong.class, PointerByReference.class,
-				IntByReference.class, Base64.Decoder.class
+				ArtifactId.class, BootVersion.class, Dependencies.class, Dependency.class, DependencyCategory.class,
+				Description.class, GroupId.class, IdName.class, JavaVersion.class, JavaVersionValues.class, Language.class,
+				LanguageValues.class, Metadata.class, Name.class, PackageName.class, Packaging.class, PackagingValues.class,
+				ProjectType.class, ProjectTypeValue.class, Version.class, CallbackReference.class, Native.class,
+				NativeLong.class, PointerByReference.class, IntByReference.class, Base64.Decoder.class
 			},
 			typeNames = { "com.sun.jna.Klass" },
 			access = {

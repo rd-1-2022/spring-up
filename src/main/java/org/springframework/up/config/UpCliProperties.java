@@ -24,4 +24,29 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "spring.up")
 public class UpCliProperties {
+
+	private Initializr initializr = new Initializr();
+
+	public Initializr getInitializr() {
+		return initializr;
+	}
+
+	public void setInitializr(Initializr initializr) {
+		this.initializr = initializr;
+	}
+
+	/**
+	 * Settings for spring initializr.
+	 */
+	public static class Initializr {
+		private String baseUrl = "https://start.spring.io";
+
+		public String getBaseUrl() {
+			return baseUrl;
+		}
+
+		public void setBaseUrl(String baseUrl) {
+			this.baseUrl = baseUrl;
+		}
+	}
 }
