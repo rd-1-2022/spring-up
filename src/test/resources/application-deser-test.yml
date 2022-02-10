@@ -1,13 +1,4 @@
 spring:
-  main:
-    web-application-type: none
-    banner-mode: off
-  shell:
-    command:
-      completion:
-        root-command: spring-up
-      version:
-        show-git-short-commit-id: true
   up:
     templateCatalogs:
       - name: catalog1
@@ -26,17 +17,3 @@ spring:
     defaults:
       packageName: com.xkcd
       templateRepositoryName: jpa
-## disable console logging
-logging:
-  pattern:
-    console:
-# log debug from a cli
-#  file:
-#    name: shell.log
-#  level:
-#    root: debug
-#    org:
-#      springframework:
-#        experimental:
-#          up: debug
-#        shell: debug

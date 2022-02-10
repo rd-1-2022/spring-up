@@ -17,6 +17,9 @@ package org.springframework.up;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.up.config.TemplateRepositoryProperties;
+import org.springframework.up.config.UpCliProperties;
 
 /**
  * Main boot app.
@@ -24,6 +27,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author Janne Valkealahti
  */
 @SpringBootApplication
+@EnableConfigurationProperties({ UpCliProperties.class, TemplateRepositoryProperties.class })
 public class UpCliApplication {
 
 	public static void main(String[] args) {
