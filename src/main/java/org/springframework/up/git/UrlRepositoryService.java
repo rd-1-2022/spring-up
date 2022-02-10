@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeroturnaround.zip.ZipUtil;
 
+import org.springframework.stereotype.Component;
 import org.springframework.up.UpException;
 import org.springframework.up.config.TemplateRepositoryProperties;
 import org.springframework.util.FileSystemUtils;
@@ -52,6 +53,7 @@ import org.springframework.util.StringUtils;
 /**
  * @author Thomas Risberg
  */
+@Component
 public class UrlRepositoryService implements SourceRepositoryService {
 
 	private final Logger logger = LoggerFactory.getLogger(UrlRepositoryService.class);

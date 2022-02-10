@@ -28,9 +28,10 @@ configurations.all {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation "org.springframework.shell:spring-shell-starter-jna"
-	implementation 'org.kohsuke:github-api:1.125'
-	implementation 'org.gitlab4j:gitlab4j-api:4.15.7'
+	implementation 'org.kohsuke:github-api:1.301'
+	implementation 'org.gitlab4j:gitlab4j-api:4.19.0'
 	implementation 'org.zeroturnaround:zt-zip:1.14'
+	implementation 'org.openrewrite:rewrite-java-11:7.0.0'
 	compileOnly 'org.springframework.experimental:spring-aot'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

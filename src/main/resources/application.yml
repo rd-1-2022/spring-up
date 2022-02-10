@@ -28,15 +28,15 @@ spring:
       templateRepositoryName: jpa
 ## disable console logging
 logging:
-  pattern:
-    console:
-## log debug from a cli
-#  file:
-#    name: shell.log
-#  level:
-#    root: debug
-#    org:
-#      springframework:
-#        experimental:
-#          up: debug
-#        shell: debug
+#  pattern:
+#    console:
+# log debug from a cli
+  file:
+    name: shell.log
+  level:
+    root: debug
+    org:
+      springframework:
+        experimental:
+          up: debug
+        shell: debug

@@ -17,14 +17,29 @@
 
 package org.springframework.up.command;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
+
+import org.jetbrains.annotations.Nullable;
+import org.openrewrite.Recipe;
+import org.openrewrite.SourceFile;
+import org.openrewrite.java.ChangePackage;
+import org.openrewrite.java.Java11Parser;
+import org.openrewrite.java.JavaParser;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
+import org.springframework.up.UpException;
+import org.springframework.up.config.TemplateRepository;
 import org.springframework.up.config.UpCliProperties;
 import org.springframework.up.git.SourceRepositoryService;
+import org.springframework.up.util.FileTypeCollectingFileVisitor;
+import org.springframework.up.util.ResultsExecutor;
 import org.springframework.util.StringUtils;
 
 @ShellComponent
@@ -42,36 +57,120 @@ public class BootCommands {
 	}
 
 	@ShellMethod(key = "boot new", value = "Create a new Spring Boot project from a template")
-	public String bootNew(
-			@ShellOption(help = "Name of the new project") String projectName,
-			@ShellOption(help = "Name of runnable project template") String templateName,
-			@ShellOption(help = "URL of runnable project template repository") String url) {
+	public void bootNew(
+			@ShellOption(help = "Name of the new project", defaultValue = ShellOption.NULL) String projectName,
+			@ShellOption(help = "Name of runnable project template", defaultValue = ShellOption.NULL) String templateName,
+			@ShellOption(help = "URL of runnable project template repository",defaultValue = ShellOption.NULL) String url,
+			@ShellOption(help = "Package name for the new project", defaultValue = ShellOption.NULL) String packageName) {
 
-		validate(projectName, templateName, url);
+
+		String projectNameToUse = getProjectName(projectName);
+		validate(templateName, url);
 		if (StringUtils.hasText(url)) {
-			generateFromUrl(projectName, url);
+			generateFromUrl(projectNameToUse, url, packageName);
 		} else {
-			generateFromTemplateName(projectName, templateName);
+			generateFromTemplateName(projectNameToUse, templateName, packageName);
 		}
 
 		System.out.println("hello world.  Let's make the project " + projectName);
-		return String.format("Project generated in %s", "/home/john/ + projectName");
+
 	}
 
-	private void generateFromTemplateName(String projectName, String templateName) {
-	}
-
-	private void generateFromUrl(String projectName, String url) {
-
-		Path tempDownloadedGeneratorPath = sourceRepositoryService.retrieveRepositoryContents(url);
-
-		System.out.println("Downloaded contents to " + tempDownloadedGeneratorPath);
-	}
-
-	private void validate(String projectName, String templateName, String url) {
+	private String getProjectName(String projectName) {
 		if (StringUtils.hasText(projectName)) {
-			System.err.println("projectName option is required");
+			return projectName;
 		}
+		String defaultProjectName = this.upCliProperties.getDefaults().getProjectName();
+		if (StringUtils.hasText(defaultProjectName)) {
+			return defaultProjectName;
+		}
+		// The last restort default
+		return "demo";
+	}
+
+	private void generateFromTemplateName(String projectName, String templateName, String packageName) {
+		//TODO does not take into account catalogs
+		Optional<String> url = getTemplateRepositoryUrl(templateName);
+		if (url.isPresent()) {
+			this.generateFromUrl(projectName, url.get(), packageName);
+		} else {
+			System.out.println("Could not find a template repository given name = " + templateName);
+		}
+	}
+
+	@Nullable
+	private Optional<String> getTemplateRepositoryUrl(String templateName) {
+		// If provided template name on the command line
+		if (StringUtils.hasText(templateName)) {
+			return findTemplateUrl(templateName);
+		} else {
+			// otherwise fall back to application defaults
+			String defaultTemplateName = this.upCliProperties.getDefaults().getTemplateRepositoryName();
+			if (StringUtils.hasText(defaultTemplateName)) {
+				return findTemplateUrl(defaultTemplateName);
+			} else {
+				return Optional.empty();
+			}
+		}
+	}
+
+	@Nullable
+	private Optional<String> findTemplateUrl(String templateName) {
+		List<TemplateRepository> templateRepositories = this.upCliProperties.getTemplateRepositories();
+		for (TemplateRepository templateRepository : templateRepositories) {
+			if (templateName.trim().equalsIgnoreCase(templateRepository.getName().trim())) {
+				// match - get url
+				String url = templateRepository.getUrl();
+				if (StringUtils.hasText(url)) {
+					return Optional.of(url);
+				}
+				break;
+			}
+		}
+		return Optional.empty();
+	}
+
+	private void generateFromUrl(String projectName, String url, String packageName) {
+
+		Path workingPath = sourceRepositoryService.retrieveRepositoryContents(url);
+		if (!StringUtils.hasText(packageName))  {
+			packageName = this.upCliProperties.getDefaults().getPackageName();
+		}
+		if (StringUtils.hasText(packageName)) {
+			refactorPackage(packageName, workingPath);
+		}
+
+		System.out.println("Downloaded contents to " + workingPath);
+	}
+
+	private void refactorPackage(String targetPackageName, Path workingPath) {
+		System.out.println("Refactoring package to " + targetPackageName);
+		JavaParser javaParser = new Java11Parser.Builder().build();
+		FileTypeCollectingFileVisitor collector = new FileTypeCollectingFileVisitor(".java");
+		try {
+			Files.walkFileTree(workingPath, collector);
+		}
+		catch (IOException e) {
+			throw new UpException("Failed reading files in " + workingPath, e);
+		}
+		List<? extends SourceFile> compilationUnits = javaParser.parse(collector.getMatches(), null, null);
+		ResultsExecutor container = new ResultsExecutor();
+
+		//TODO derive fromPackage using location of existing @SpringBootApplication class, hardcode for now
+		String fromPackage = "com.example.up";
+		Recipe recipe = new ChangePackage(fromPackage, targetPackageName, true);
+		container.addAll(recipe.run(compilationUnits));
+		try {
+			container.execute();
+		}
+		catch (IOException e) {
+			throw new UpException("Error performing refactoring", e);
+		}
+
+		//TODO change groupId and artifactId
+	}
+
+	private void validate(String templateName, String url) {
 		if (StringUtils.hasText(templateName) && StringUtils.hasText(url)) {
 			System.err.println("templateName and url option can not be specified together");
 		}

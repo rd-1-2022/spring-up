@@ -19,9 +19,19 @@ package org.springframework.up.config;
 
 public class Defaults {
 
+	private String projectName;
+
 	private String packageName;
 
 	private String templateRepositoryName;
+
+	public String getProjectName() {
+		return projectName;
+	}
+
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
+	}
 
 	public String getPackageName() {
 		return packageName;
@@ -42,7 +52,8 @@ public class Defaults {
 	@Override
 	public String toString() {
 		return "Defaults{" +
-				"packageName='" + packageName + '\'' +
+				"projectName='" + projectName + '\'' +
+				", packageName='" + packageName + '\'' +
 				", templateRepositoryName='" + templateRepositoryName + '\'' +
 				'}';
 	}
