@@ -15,6 +15,9 @@
  */
 package org.springframework.up.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -24,4 +27,43 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "spring.up")
 public class UpCliProperties {
+
+	private List<TemplateCatalog> templateCatalogs = new ArrayList<>();
+
+	private List<TemplateRepository> templateRepositories = new ArrayList<>();
+
+	private Defaults defaults;
+
+	public List<TemplateCatalog> getTemplateCatalogs() {
+		return templateCatalogs;
+	}
+
+	public void setTemplateCatalogs(List<TemplateCatalog> templateCatalogs) {
+		this.templateCatalogs = templateCatalogs;
+	}
+
+	public List<TemplateRepository> getTemplateRepositories() {
+		return templateRepositories;
+	}
+
+	public void setTemplateRepositories(List<TemplateRepository> templateRepositories) {
+		this.templateRepositories = templateRepositories;
+	}
+
+	public Defaults getDefaults() {
+		return defaults;
+	}
+
+	public void setDefaults(Defaults defaults) {
+		this.defaults = defaults;
+	}
+
+	@Override
+	public String toString() {
+		return "UpCliProperties{" +
+				"templateCatalogs=" + templateCatalogs +
+				", templateRepositories=" + templateRepositories +
+				", defaults=" + defaults +
+				'}';
+	}
 }
