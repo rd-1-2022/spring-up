@@ -17,6 +17,7 @@
 
 package org.springframework.up.command;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,11 +25,15 @@ import java.util.List;
 import java.util.Optional;
 
 import org.jetbrains.annotations.Nullable;
+import org.jline.utils.AttributedStringBuilder;
+import org.jline.utils.AttributedStyle;
 import org.openrewrite.Recipe;
 import org.openrewrite.SourceFile;
 import org.openrewrite.java.ChangePackage;
 import org.openrewrite.java.Java11Parser;
 import org.openrewrite.java.JavaParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
@@ -39,11 +44,15 @@ import org.springframework.up.config.TemplateRepository;
 import org.springframework.up.config.UpCliProperties;
 import org.springframework.up.git.SourceRepositoryService;
 import org.springframework.up.util.FileTypeCollectingFileVisitor;
+import org.springframework.up.util.IoUtils;
 import org.springframework.up.util.ResultsExecutor;
+import org.springframework.util.FileSystemUtils;
 import org.springframework.util.StringUtils;
 
 @ShellComponent
 public class BootCommands {
+
+	private static final Logger logger = LoggerFactory.getLogger(BootCommands.class);
 
 	private UpCliProperties upCliProperties;
 
@@ -72,8 +81,6 @@ public class BootCommands {
 			generateFromTemplateName(projectNameToUse, templateName, packageName);
 		}
 
-		System.out.println("hello world.  Let's make the project " + projectName);
-
 	}
 
 	private String getProjectName(String projectName) {
@@ -84,7 +91,7 @@ public class BootCommands {
 		if (StringUtils.hasText(defaultProjectName)) {
 			return defaultProjectName;
 		}
-		// The last restort default
+		// The last resort default project name
 		return "demo";
 	}
 
@@ -94,7 +101,7 @@ public class BootCommands {
 		if (url.isPresent()) {
 			this.generateFromUrl(projectName, url.get(), packageName);
 		} else {
-			System.out.println("Could not find a template repository given name = " + templateName);
+			throw new UpException("Could not find a template repository given name = " + templateName);
 		}
 	}
 
@@ -132,19 +139,39 @@ public class BootCommands {
 
 	private void generateFromUrl(String projectName, String url, String packageName) {
 
-		Path workingPath = sourceRepositoryService.retrieveRepositoryContents(url);
+		Path repositoryContentsPath = sourceRepositoryService.retrieveRepositoryContents(url);
 		if (!StringUtils.hasText(packageName))  {
 			packageName = this.upCliProperties.getDefaults().getPackageName();
 		}
 		if (StringUtils.hasText(packageName)) {
-			refactorPackage(packageName, workingPath);
+			refactorPackage(packageName, repositoryContentsPath);
+		}
+		File projectDirectory = createProjectDirectory(projectName);
+		try {
+			FileSystemUtils.copyRecursively(repositoryContentsPath.toFile(), projectDirectory);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+			throw new UpException("Could not copy files.", e);
 		}
 
-		System.out.println("Downloaded contents to " + workingPath);
+		AttributedStringBuilder sb = new AttributedStringBuilder();
+		sb.append("Project " + projectName + " created in " + repositoryContentsPath)
+				.style(sb.style().foreground(AttributedStyle.GREEN));
+		System.out.println(sb.toAnsi());
+	}
+
+	private File createProjectDirectory(String projectName) {
+		File workingDirectory = IoUtils.getWorkingDirectory();
+		String projectNameToUse = projectName.replaceAll(" ", "_");
+		File projectDirectory = new File(workingDirectory, projectNameToUse);
+		IoUtils.createDirectory(projectDirectory);
+		logger.debug("Created directory " + projectDirectory);
+		return projectDirectory;
 	}
 
 	private void refactorPackage(String targetPackageName, Path workingPath) {
-		System.out.println("Refactoring package to " + targetPackageName);
+		logger.debug("Refactoring to package name " + targetPackageName);
 		JavaParser javaParser = new Java11Parser.Builder().build();
 		FileTypeCollectingFileVisitor collector = new FileTypeCollectingFileVisitor(".java");
 		try {
