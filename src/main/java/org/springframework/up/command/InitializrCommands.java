@@ -110,7 +110,7 @@ public class InitializrCommands extends AbstractShellComponent {
 	@Autowired
 	private TemplateExecutor templateExecutor;
 
-	@ShellMethod(key = "initializr init", value = "Initialize project")
+	@ShellMethod(key = "initializr new", value = "Create a new project from start.spring.io")
 	public String init(
 		@ShellOption(help = "Path to extract", defaultValue = ShellOption.NULL) String path,
 		@ShellOption(help = "Project", defaultValue = ShellOption.NULL) String project,
