@@ -33,7 +33,6 @@ public class LineReaderPostProcessor implements BeanPostProcessor {
 		if (beanName.equalsIgnoreCase("lineReader")) {
 			LineReader lineReader = (LineReader) bean;
 			Path path = Paths.get(System.getProperty("user.home"), "spring-shell.log");
-			System.out.println("Setting history file to " + path);
 			lineReader.setVariable(LineReader.HISTORY_FILE, path);
 			return lineReader;
 		}

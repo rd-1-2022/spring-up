@@ -36,6 +36,9 @@ dependencies {
 	implementation 'org.gitlab4j:gitlab4j-api:4.19.0'
 	implementation 'org.zeroturnaround:zt-zip:1.14'
 	implementation 'org.openrewrite:rewrite-java-11:7.0.0'
+	implementation 'org.apache.ant:ant:1.10.9'
+	implementation 'org.apache.maven:maven-model:3.5.4'
+	implementation 'org.apache.tika:tika-core:1.18'
 	compileOnly 'org.springframework.experimental:spring-aot'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
