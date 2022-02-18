@@ -21,6 +21,13 @@ ext {
 	set('springShellVersion', '2.1.0-SNAPSHOT')
 	set('initializrVersion', '0.11.1')
 	set('jarchivelibVersion', '1.2.0')
+	set('kohsukeVersion', '1.301')
+	set('gitlab4jVersion', '4.19.0')
+	set('ztzipVersion', '1.14')
+	set('openrewriteVersion', '7.0.0')
+	set('antVersion', '1.10.9')
+	set('mavenModelVersion', '3.5.4')
+	set('tikaVersion', '1.18')
 }
 
 configurations.all {
@@ -32,13 +39,13 @@ dependencies {
 	implementation "org.springframework.shell:spring-shell-starter-jna"
 	implementation 'io.spring.initializr:initializr-generator'
 	implementation 'org.rauschig:jarchivelib'
-	implementation 'org.kohsuke:github-api:1.301'
-	implementation 'org.gitlab4j:gitlab4j-api:4.19.0'
-	implementation 'org.zeroturnaround:zt-zip:1.14'
-	implementation 'org.openrewrite:rewrite-java-11:7.0.0'
-	implementation 'org.apache.ant:ant:1.10.9'
-	implementation 'org.apache.maven:maven-model:3.5.4'
-	implementation 'org.apache.tika:tika-core:1.18'
+	implementation 'org.kohsuke:github-api'
+	implementation 'org.gitlab4j:gitlab4j-api'
+	implementation 'org.zeroturnaround:zt-zip'
+	implementation 'org.openrewrite:rewrite-java-11'
+	implementation 'org.apache.ant:ant'
+	implementation 'org.apache.maven:maven-model'
+	implementation 'org.apache.tika:tika-core'
 	compileOnly 'org.springframework.experimental:spring-aot'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
@@ -48,6 +55,13 @@ dependencyManagement {
 		dependency "org.springframework.experimental:spring-aot:0.11.2"
 		dependency "org.springframework.shell:spring-shell-starter-jna:${springShellVersion}"
 		dependency "org.rauschig:jarchivelib:${jarchivelibVersion}"
+		dependency "org.kohsuke:github-api:${kohsukeVersion}"
+		dependency "org.gitlab4j:gitlab4j-api:${gitlab4jVersion}"
+		dependency "org.zeroturnaround:zt-zip:${ztzipVersion}"
+		dependency "org.openrewrite:rewrite-java-11:${openrewriteVersion}"
+		dependency "org.apache.ant:ant:${antVersion}"
+		dependency "org.apache.maven:maven-model:${mavenModelVersion}"
+		dependency "org.apache.tika:tika-core:${tikaVersion}"
 	}
 	imports {
 		mavenBom "org.springframework.shell:spring-shell-dependencies:${springShellVersion}"
@@ -62,4 +76,3 @@ test {
 springBoot {
 	buildInfo()
 }
-
