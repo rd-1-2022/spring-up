@@ -147,6 +147,14 @@ public interface ComponentFlow extends Wizard<ComponentFlowResult> {
 		StringInputSpec defaultValue(String defaultValue);
 
 		/**
+		 * Sets a mask character.
+		 *
+		 * @param maskCharacter the mask character
+		 * @return a builder
+		 */
+		StringInputSpec maskCharacter(Character maskCharacter);
+
+		/**
 		 * Sets a renderer function.
 		 *
 		 * @param renderer the renderer
@@ -684,6 +692,7 @@ public interface ComponentFlow extends Wizard<ComponentFlowResult> {
 		private String resultValue;
 		private ResultMode resultMode;
 		private String defaultValue;
+		private Character maskCharacter;
 		private Function<StringInputContext, List<AttributedString>> renderer;
 		private List<Consumer<StringInputContext>> preHandlers = new ArrayList<>();
 		private List<Consumer<StringInputContext>> postHandlers = new ArrayList<>();
@@ -715,6 +724,12 @@ public interface ComponentFlow extends Wizard<ComponentFlowResult> {
 		@Override
 		public StringInputSpec defaultValue(String defaultValue) {
 			this.defaultValue = defaultValue;
+			return this;
+		}
+
+		@Override
+		public StringInputSpec maskCharacter(Character maskCharacter) {
+			this.maskCharacter = maskCharacter;
 			return this;
 		}
 
@@ -768,6 +783,10 @@ public interface ComponentFlow extends Wizard<ComponentFlowResult> {
 
 		public String getDefaultValue() {
 			return defaultValue;
+		}
+
+		public Character getMaskCharacter() {
+			return maskCharacter;
 		}
 
 		public Function<StringInputContext, List<AttributedString>> getRenderer() {
@@ -1319,6 +1338,7 @@ public interface ComponentFlow extends Wizard<ComponentFlowResult> {
 						StringInput selector = new StringInput(terminal, input.getName(), input.getDefaultValue());
 						selector.setResourceLoader(resourceLoader);
 						selector.setTemplateExecutor(templateExecutor);
+						selector.setMaskCharater(input.getMaskCharacter());
 						if (StringUtils.hasText(input.getTemplateLocation())) {
 							selector.setTemplateLocation(input.getTemplateLocation());
 						}

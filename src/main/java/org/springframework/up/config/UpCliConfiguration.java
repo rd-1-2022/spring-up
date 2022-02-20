@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorResourceFactory;
 import org.springframework.up.initializr.InitializrClient;
+import org.springframework.up.support.UpCliUserConfig;
 import org.springframework.web.reactive.function.client.WebClient;
 
 /**
@@ -57,5 +58,10 @@ public class UpCliConfiguration {
 		return InitializrClient.builder(webClientBuilder)
 				.target(upCliProperties.getInitializr().getBaseUrl())
 				.build();
+	}
+
+	@Bean
+	public UpCliUserConfig upCliUserConfig() {
+		return new UpCliUserConfig();
 	}
 }

@@ -29,6 +29,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class UpCliProperties {
 
 	private Initializr initializr = new Initializr();
+	private Github github = new Github();
 
 	public Initializr getInitializr() {
 		return initializr;
@@ -36,6 +37,14 @@ public class UpCliProperties {
 
 	public void setInitializr(Initializr initializr) {
 		this.initializr = initializr;
+	}
+
+	public Github getGithub() {
+		return github;
+	}
+
+	public void setGithub(Github github) {
+		this.github = github;
 	}
 
 	/**
@@ -50,6 +59,36 @@ public class UpCliProperties {
 
 		public void setBaseUrl(String baseUrl) {
 			this.baseUrl = baseUrl;
+		}
+	}
+
+	public static class Github {
+
+		/**
+		 * OAuth client id for github oauth app which user is seeing when doing auth
+		 * flow. This is public so safe to expose.
+		 */
+		private String clientId;
+
+		/**
+		 * Default scopes auth flow requests from a user.
+		 */
+		private String defaultScopes = "repo,read:org";
+
+		public String getClientId() {
+			return clientId;
+		}
+
+		public void setClientId(String clientId) {
+			this.clientId = clientId;
+		}
+
+		public String getDefaultScopes() {
+			return defaultScopes;
+		}
+
+		public void setDefaultScopes(String defaultScopes) {
+			this.defaultScopes = defaultScopes;
 		}
 	}
 
