@@ -84,10 +84,10 @@ public class UserConfig<T> {
 			path = pathProvider.apply(System.getenv(configDirEnv));
 		}
 		else if (StringUtils.hasText(System.getenv(XDG_CONFIG_HOME))) {
-			path = pathProvider.apply(System.getProperty(XDG_CONFIG_HOME)).resolve(configDirName);
+			path = pathProvider.apply(System.getenv(XDG_CONFIG_HOME)).resolve(configDirName);
 		}
 		else if (isWindows() && StringUtils.hasText(System.getenv(APP_DATA))) {
-			path = pathProvider.apply(System.getProperty(APP_DATA)).resolve(configDirName);
+			path = pathProvider.apply(System.getenv(APP_DATA)).resolve(configDirName);
 		}
 		else {
 			path = pathProvider.apply(System.getProperty("user.home")).resolve(".config").resolve(configDirName);
