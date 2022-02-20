@@ -24,6 +24,10 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
+import org.kohsuke.github.GHMyself;
+import org.kohsuke.github.GHObject;
+import org.kohsuke.github.GHPerson;
+import org.kohsuke.github.GHUser;
 
 import org.springframework.nativex.hint.FieldHint;
 import org.springframework.nativex.hint.JdkProxyHint;
@@ -204,6 +208,27 @@ import org.springframework.up.initializr.model.ProjectType.ProjectTypeValue;
 		),
 		@TypeHint(
 			typeNames = "org.jline.terminal.impl.jna.win.Kernel32$UnionChar",
+			access = {
+				TypeAccess.PUBLIC_CONSTRUCTORS, TypeAccess.DECLARED_CLASSES, TypeAccess.DECLARED_CONSTRUCTORS,
+				TypeAccess.DECLARED_FIELDS, TypeAccess.DECLARED_METHODS
+			}
+		),
+		@TypeHint(
+			typeNames = "org.springframework.up.support.UpCliUserConfig$Hosts",
+			access = {
+				TypeAccess.PUBLIC_CONSTRUCTORS, TypeAccess.DECLARED_CLASSES, TypeAccess.DECLARED_CONSTRUCTORS,
+				TypeAccess.DECLARED_FIELDS, TypeAccess.DECLARED_METHODS
+			}
+		),
+		@TypeHint(
+			typeNames = "org.springframework.up.support.UpCliUserConfig$Host",
+			access = {
+				TypeAccess.PUBLIC_CONSTRUCTORS, TypeAccess.DECLARED_CLASSES, TypeAccess.DECLARED_CONSTRUCTORS,
+				TypeAccess.DECLARED_FIELDS, TypeAccess.DECLARED_METHODS
+			}
+		),
+		@TypeHint(
+			types = { GHMyself.class, GHObject.class, GHPerson.class, GHUser.class },
 			access = {
 				TypeAccess.PUBLIC_CONSTRUCTORS, TypeAccess.DECLARED_CLASSES, TypeAccess.DECLARED_CONSTRUCTORS,
 				TypeAccess.DECLARED_FIELDS, TypeAccess.DECLARED_METHODS

@@ -33,6 +33,8 @@ public class UpCliPropertiesTests {
 				.run((context) -> {
 					UpCliProperties properties = context.getBean(UpCliProperties.class);
 					assertThat(properties.getInitializr().getBaseUrl()).isEqualTo("https://start.spring.io");
+					assertThat(properties.getGithub().getClientId()).isNull();
+					assertThat(properties.getGithub().getDefaultScopes()).isEqualTo("repo,read:org");
 				});
 	}
 
@@ -40,10 +42,14 @@ public class UpCliPropertiesTests {
 	public void setProperties() {
 		this.contextRunner
 				.withPropertyValues("spring.up.initializr.base-url=fakeurl")
+				.withPropertyValues("spring.up.github.client-id=fakeid")
+				.withPropertyValues("spring.up.github.default-scopes=fakescopes")
 				.withUserConfiguration(Config1.class)
 				.run((context) -> {
 					UpCliProperties properties = context.getBean(UpCliProperties.class);
 					assertThat(properties.getInitializr().getBaseUrl()).isEqualTo("fakeurl");
+					assertThat(properties.getGithub().getClientId()).isEqualTo("fakeid");
+					assertThat(properties.getGithub().getDefaultScopes()).isEqualTo("fakescopes");
 				});
 	}
 
