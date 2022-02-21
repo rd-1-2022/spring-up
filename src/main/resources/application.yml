@@ -10,7 +10,7 @@ spring:
         show-git-short-commit-id: true
   up:
     github:
-      client-id: e4983cc3c5a6a2066b63
+      client-id: 10a18d1837ecdac59ba2
       default-scopes: repo,read:org
     templateCatalogs:
       - name: catalog1
