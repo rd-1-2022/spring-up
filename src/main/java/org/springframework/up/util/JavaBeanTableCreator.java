@@ -67,6 +67,7 @@ public class JavaBeanTableCreator {
 		TableModel model = new BeanListTableModel<>(list, headers);
 		TableBuilder tableBuilder = new TableBuilder(model);
 		Table table = applyStyle(tableBuilder).build();
+		System.out.println(table.render(terminal.getWidth()));
 	}
 
 	/**

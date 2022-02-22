@@ -81,7 +81,6 @@ public class BootCommands {
 			@ShellOption(help = "Package name for the new project", defaultValue = ShellOption.NULL) String packageName) {
 		String projectNameToUse = getProjectName(projectName); // Will return string or throw exception
 		String urlToUse = getTemplateRepositoryUrl(template);  // Will return string or throw exception
-		System.out.println("URL To Use = " + urlToUse);
 		String packageNameToUse = PackageNameUtils.getPackageName(packageName, this.upCliProperties.getDefaults().getPackageName());
 		generateFromUrl(projectNameToUse, urlToUse, packageNameToUse);
 	}
