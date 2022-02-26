@@ -23,7 +23,6 @@ ext {
 	set('jarchivelibVersion', '1.2.0')
 	set('kohsukeVersion', '1.301')
 	set('gitlab4jVersion', '4.19.0')
-	set('ztzipVersion', '1.14')
 	set('openrewriteVersion', '7.0.0')
 	set('antVersion', '1.10.9')
 	set('mavenModelVersion', '3.5.4')
@@ -44,7 +43,6 @@ dependencies {
 	implementation 'org.rauschig:jarchivelib'
 	implementation 'org.kohsuke:github-api'
 	implementation 'org.gitlab4j:gitlab4j-api'
-	implementation 'org.zeroturnaround:zt-zip'
 	implementation 'org.openrewrite:rewrite-java-11'
 	implementation 'org.apache.ant:ant'
 	implementation 'org.apache.maven:maven-model'
@@ -61,7 +59,6 @@ dependencyManagement {
 		dependency "org.rauschig:jarchivelib:${jarchivelibVersion}"
 		dependency "org.kohsuke:github-api:${kohsukeVersion}"
 		dependency "org.gitlab4j:gitlab4j-api:${gitlab4jVersion}"
-		dependency "org.zeroturnaround:zt-zip:${ztzipVersion}"
 		dependency "org.openrewrite:rewrite-java-11:${openrewriteVersion}"
 		dependency "org.apache.ant:ant:${antVersion}"
 		dependency "org.apache.maven:maven-model:${mavenModelVersion}"

@@ -38,9 +38,10 @@ import org.gitlab4j.api.models.Tag;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
+import org.rauschig.jarchivelib.Archiver;
+import org.rauschig.jarchivelib.ArchiverFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zeroturnaround.zip.ZipUtil;
 
 import org.springframework.stereotype.Component;
 import org.springframework.up.UpException;
@@ -129,29 +130,37 @@ public class UrlRepositoryService implements SourceRepositoryService {
 			String ref = url.getRef();
 			GHRepository ghRepository = github.getRepository(repo);
 			InputStream inputStream = ghRepository
-					.readZip((inputstream) -> new ByteArrayInputStream(StreamUtils.copyToByteArray(inputstream)), ref);
-			ZipUtil.unpack(inputStream, targetPath.toFile());
-			Path unzipDir = Paths.get(targetPath.toFile().getAbsolutePath());
-			AtomicReference<Path> zipDir = new AtomicReference<>();
-			Files.list(unzipDir.toFile().toPath()).forEach((path) -> {
+					.readTar((inputstream) -> new ByteArrayInputStream(StreamUtils.copyToByteArray(inputstream)), ref);
+
+			File targetFile = targetPath.toFile();
+			Archiver archiver = ArchiverFactory.createArchiver("tar", "gz");
+			try {
+				archiver.extract(inputStream, targetPath.toFile());
+			} catch (Exception e) {
+				throw new UpException(String.format("Extraction error to %s", targetFile.getAbsolutePath()), e);
+			}
+
+			Path unTar = Paths.get(targetPath.toFile().getAbsolutePath());
+			AtomicReference<Path> tarDir = new AtomicReference<>();
+			Files.list(unTar.toFile().toPath()).forEach((path) -> {
 				if (path.toFile().isDirectory()) {
-					if (zipDir.get() != null) {
-						throw new UpException("Detected multiple directories '" + zipDir.get().toFile().getName()
+					if (tarDir.get() != null) {
+						throw new UpException("Detected multiple directories '" + tarDir.get().toFile().getName()
 								+ "' and '" + path.toFile().getName() + " in downloaded zip file");
 					}
-					zipDir.set(path);
+					tarDir.set(path);
 				}
 			});
-			if (zipDir.get() == null) {
+			if (tarDir.get() == null) {
 				throw new UpException(
-						"Downloaded zip file not unzipped correctly into " + unzipDir.toFile().getAbsolutePath());
+						"Downloaded zip file not unzipped correctly into " + unTar.toFile().getAbsolutePath());
 			}
 			Path contentPath;
 			if (StringUtils.hasText(url.getSubPath())) {
-				contentPath = Paths.get(zipDir.get().toFile().getAbsolutePath(), url.getSubPath());
+				contentPath = Paths.get(tarDir.get().toFile().getAbsolutePath(), url.getSubPath());
 			}
 			else {
-				contentPath = zipDir.get();
+				contentPath = tarDir.get();
 			}
 			return contentPath;
 		}
@@ -192,13 +201,21 @@ public class UrlRepositoryService implements SourceRepositoryService {
 					}
 				}
 			}
-			File zipfile = gitLabApi.getRepositoryApi().getRepositoryArchive(repo, refSha, targetPath.toFile(),
-					ArchiveFormat.ZIP);
-			logger.debug("Wrote GitLab Repo " + repo + " to " + zipfile.getAbsolutePath());
-			ZipUtil.unpack(zipfile, targetPath.toFile());
-			String zipDirName = zipfile.getName().substring(0, zipfile.getName().indexOf('.'));
-			if (!zipfile.delete()) {
-				logger.warn("Not able to delete zip file " + zipfile.getAbsolutePath());
+			File tarfile = gitLabApi.getRepositoryApi().getRepositoryArchive(repo, refSha, targetPath.toFile(),
+					ArchiveFormat.TAR_GZ);
+			logger.debug("Wrote GitLab Repo " + repo + " to " + tarfile.getAbsolutePath());
+
+			File targetFile = targetPath.toFile();
+			Archiver archiver = ArchiverFactory.createArchiver("tar", "gz");
+			try {
+				archiver.extract(tarfile, targetPath.toFile());
+			} catch (Exception e) {
+				throw new UpException(String.format("Extraction error to %s", targetFile.getAbsolutePath()), e);
+			}
+
+			String zipDirName = tarfile.getName().substring(0, tarfile.getName().indexOf('.'));
+			if (!tarfile.delete()) {
+				logger.warn("Not able to delete zip file " + tarfile.getAbsolutePath());
 			}
 			Path contentPath;
 			if (StringUtils.hasText(url.getSubPath())) {
