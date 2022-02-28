@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.springframework.up.config.UpCliProperties;
 import org.springframework.up.support.configfile.UserConfig;
 
 /**
@@ -39,6 +40,8 @@ public class UpCliUserConfig {
 	 */
 	public final static String HOSTS = "hosts.yml";
 
+	public final static String UP_CLI_PROPERTIES = "springup.yml";
+
 	/**
 	 * Base directory name we store our config files.
 	 */
@@ -49,6 +52,8 @@ public class UpCliUserConfig {
 	 */
 	private final UserConfig<Hosts> hostsConfigFile;
 
+	private final UserConfig<UpCliProperties> upCliPropertiesUserConfig;
+
 	public UpCliUserConfig() {
 		this(null);
 	}
@@ -58,6 +63,14 @@ public class UpCliUserConfig {
 		if (pathProvider != null) {
 			this.hostsConfigFile.setPathProvider(pathProvider);
 		}
+		this.upCliPropertiesUserConfig = new UserConfig<>(UP_CLI_PROPERTIES, UpCliProperties.class, SPRINGUP_CONFIG_DIR, SPRINGUP_CONFIG_NAME);
+		if (pathProvider != null) {
+			this.upCliPropertiesUserConfig.setPathProvider(pathProvider);
+		}
+	}
+
+	public UpCliProperties getUpCliProperties() {
+		return this.upCliPropertiesUserConfig.getConfig();
 	}
 
 	/**
@@ -73,7 +86,7 @@ public class UpCliUserConfig {
 	/**
 	 * Sets hosts.
 	 *
-	 * @param the hosts
+	 * @param hosts
 	 */
 	public void setHosts(Hosts hosts) {
 		hostsConfigFile.setConfig(hosts);

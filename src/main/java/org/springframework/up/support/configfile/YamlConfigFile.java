@@ -35,7 +35,7 @@ public class YamlConfigFile implements ConfigFile {
 			InputStream in = new DataInputStream(Files.newInputStream(path));
 			return mapper.readValue(in, type);
 		} catch (Exception e) {
-			throw new RuntimeException("Unable to read", e);
+			throw new RuntimeException("Unable to read from path " + path, e);
 		}
 	}
 
@@ -45,7 +45,7 @@ public class YamlConfigFile implements ConfigFile {
 			OutputStream out = new DataOutputStream(Files.newOutputStream(path));
 			mapper.writeValue(out, value);
 		} catch (Exception e) {
-			throw new RuntimeException("Unable to write", e);
+			throw new RuntimeException("Unable to write to path " + path, e);
 		}
 	}
 }

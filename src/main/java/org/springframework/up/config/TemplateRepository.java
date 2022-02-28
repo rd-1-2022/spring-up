@@ -20,6 +20,10 @@ package org.springframework.up.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+@JsonNaming(PropertyNamingStrategies.KebabCaseStrategy.class)
 public class TemplateRepository {
 
 	private String name;

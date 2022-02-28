@@ -46,13 +46,13 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 import org.springframework.up.UpException;
 import org.springframework.up.config.TemplateRepository;
-import org.springframework.up.config.UpCliProperties;
 import org.springframework.up.git.SourceRepositoryService;
+import org.springframework.up.support.UpCliUserConfig;
 import org.springframework.up.util.FileTypeCollectingFileVisitor;
 import org.springframework.up.util.IoUtils;
 import org.springframework.up.util.PackageNameUtils;
-import org.springframework.up.util.ProjectInfo;
 import org.springframework.up.util.PomReader;
+import org.springframework.up.util.ProjectInfo;
 import org.springframework.up.util.ResultsExecutor;
 import org.springframework.up.util.RootPackageFinder;
 import org.springframework.util.StringUtils;
@@ -62,16 +62,20 @@ public class BootCommands {
 
 	private static final Logger logger = LoggerFactory.getLogger(BootCommands.class);
 
-	private UpCliProperties upCliProperties;
+	private static final String DEFAULT_PROJECT_NAME = "demo";
+
+	private static final String DEFAULT_PACKAGE_NAME = "com.example";
+
+	private static final String DEFAULT_REPO_URL = "https://github.com/rd-1-2022/rpt-spring-data-jpa";
+
+	private UpCliUserConfig upCliUserConfig;
 
 	private final SourceRepositoryService sourceRepositoryService;
 
-	private static final String DEFAULT_PROJECT_NAME = "demo";
-
 	@Autowired
-	public BootCommands(UpCliProperties upCliProperties,
+	public BootCommands(UpCliUserConfig upCliUserConfig,
 			SourceRepositoryService sourceRepositoryService) {
-		this.upCliProperties = upCliProperties;
+		this.upCliUserConfig = upCliUserConfig;
 		this.sourceRepositoryService = sourceRepositoryService;
 	}
 
@@ -80,9 +84,9 @@ public class BootCommands {
 			@ShellOption(help = "Name of the new project", defaultValue = ShellOption.NULL) String projectName,
 			@ShellOption(help = "Name or URL of runnable project template", defaultValue = ShellOption.NULL) String template,
 			@ShellOption(help = "Package name for the new project", defaultValue = ShellOption.NULL) String packageName) {
-		String projectNameToUse = getProjectName(projectName); // Will return string or throw exception
+		String projectNameToUse = getProjectName(projectName); // Will return string, never null
 		String urlToUse = getTemplateRepositoryUrl(template);  // Will return string or throw exception
-		String packageNameToUse = PackageNameUtils.getPackageName(packageName, this.upCliProperties.getDefaults().getPackageName());
+		String packageNameToUse = getPackageName(packageName); // Will return string, never null
 		generateFromUrl(projectNameToUse, urlToUse, packageNameToUse);
 	}
 
@@ -90,9 +94,11 @@ public class BootCommands {
 		if (StringUtils.hasText(projectName)) {
 			return projectName;
 		}
-		String defaultProjectName = this.upCliProperties.getDefaults().getProjectName();
-		if (StringUtils.hasText(defaultProjectName)) {
-			return defaultProjectName;
+		if (this.upCliUserConfig.getUpCliProperties() != null && this.upCliUserConfig.getUpCliProperties().getDefaults() != null) {
+			String defaultProjectName = this.upCliUserConfig.getUpCliProperties().getDefaults().getProjectName();
+			if (StringUtils.hasText(defaultProjectName)) {
+				return defaultProjectName;
+			}
 		}
 		// The last resort default project name
 		return DEFAULT_PROJECT_NAME;
@@ -102,7 +108,7 @@ public class BootCommands {
 	private String getTemplateRepositoryUrl(String templateName) {
 		// If provided template name on the command line
 		if (StringUtils.hasText(templateName)) {
-			// Check it if it a URL
+			// Check it if is a URL
 			if (templateName.startsWith("https")) {
 				return templateName;
 			}
@@ -111,29 +117,55 @@ public class BootCommands {
 				// look up url based on name
 				return findTemplateUrl(templateName);
 			}
-		} else {
-			// no cli argument specified, fall back to application default value
-			String defaultTemplateName = this.upCliProperties.getDefaults().getTemplateRepositoryName();
+		}
+		// no cli argument specified for template name, fall back to configuration provided default name if available
+		if (this.upCliUserConfig.getUpCliProperties() != null && this.upCliUserConfig.getUpCliProperties().getDefaults() != null) {
+			String defaultTemplateName = this.upCliUserConfig.getUpCliProperties().getDefaults().getTemplateRepositoryName();
 			if (StringUtils.hasText(defaultTemplateName)) {
 				return findTemplateUrl(defaultTemplateName);
-			} else {
-				// no default template name found
-				throw new UpException("Template name not specified and no default value configured.");
 			}
 		}
+
+		// no default template name found
+		AttributedStringBuilder sb = new AttributedStringBuilder();
+		sb.style(sb.style().foreground(AttributedStyle.YELLOW));
+		sb.append("No default runnable project template name defined in the Spring Up configuration file.  Falling back to " + DEFAULT_REPO_URL);
+		System.out.println(sb.toAnsi());
+		return DEFAULT_REPO_URL;
 	}
 
+	private String getPackageName(String packageName) {
+		String defaultPackageName = null;
+		// look for default package name defined in config file
+		if (this.upCliUserConfig.getUpCliProperties() != null && this.upCliUserConfig.getUpCliProperties().getDefaults() != null) {
+			String candidatePackageName = this.upCliUserConfig.getUpCliProperties().getDefaults().getPackageName();
+			if (StringUtils.hasText(candidatePackageName)) {
+				defaultPackageName = candidatePackageName;
+			}
+		}
+		// if no user defined default, use
+		if (!StringUtils.hasText(defaultPackageName)) {
+			AttributedStringBuilder sb = new AttributedStringBuilder();
+			sb.style(sb.style().foreground(AttributedStyle.YELLOW));
+			sb.append("Using default package name " + DEFAULT_PACKAGE_NAME);
+			defaultPackageName = DEFAULT_PACKAGE_NAME;
+		}
+		// get the final package name to use taking into account default value and validity of that value from the JLS
+		return PackageNameUtils.getTargetPackageName(packageName, defaultPackageName);
+	}
 	@Nullable
 	private String findTemplateUrl(String templateName) {
-		List<TemplateRepository> templateRepositories = this.upCliProperties.getTemplateRepositories();
-		for (TemplateRepository templateRepository : templateRepositories) {
-			if (templateName.trim().equalsIgnoreCase(templateRepository.getName().trim())) {
-				// match - get url
-				String url = templateRepository.getUrl();
-				if (StringUtils.hasText(url)) {
-					return url;
+		if (this.upCliUserConfig.getUpCliProperties() != null) {
+			List<TemplateRepository> templateRepositories = this.upCliUserConfig.getUpCliProperties().getTemplateRepositories();
+			for (TemplateRepository templateRepository : templateRepositories) {
+				if (templateName.trim().equalsIgnoreCase(templateRepository.getName().trim())) {
+					// match - get url
+					String url = templateRepository.getUrl();
+					if (StringUtils.hasText(url)) {
+						return url;
+					}
+					break;
 				}
-				break;
 			}
 		}
 		throw new UpException("Could not resolve template name " + templateName + " to URL.  Check configuration file settings.");
@@ -147,7 +179,7 @@ public class BootCommands {
 		// Get existing package name
 		Optional<String> existingPackageName = this.getRootPackageName(repositoryContentsPath);
 
-		// Refactor packages
+		// Refactor packages if package name is available
 		if (StringUtils.hasText(packageName) && existingPackageName.isPresent()) {
 			refactorPackage(packageName, existingPackageName.get(), repositoryContentsPath);
 		}
@@ -194,8 +226,8 @@ public class BootCommands {
 		}
 
 		AttributedStringBuilder sb = new AttributedStringBuilder();
-		sb.append("Project " + projectName + " created.")
-				.style(sb.style().foreground(AttributedStyle.GREEN));
+		sb.style(sb.style().foreground(AttributedStyle.GREEN));
+		sb.append("Project " + projectName + " created.");
 		System.out.println(sb.toAnsi());
 	}
 
@@ -245,8 +277,8 @@ public class BootCommands {
 		Optional<String> rootPackage = rootPackageFinder.findRootPackage(workingPath.toFile());
 		if (rootPackage.isEmpty()) {
 			AttributedStringBuilder sb = new AttributedStringBuilder();
-			sb.append("Could find root package containing class with @SpringBootApplication.  No Java Package refactoring from the template will occur.")
-					.style(sb.style().foreground(AttributedStyle.YELLOW));
+			sb.style(sb.style().foreground(AttributedStyle.YELLOW));
+			sb.append("Could find root package containing class with @SpringBootApplication.  No Java Package refactoring from the template will occur.");
 			System.out.println(sb.toAnsi());
 			return Optional.empty();
 		}

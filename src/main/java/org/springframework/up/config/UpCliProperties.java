@@ -18,6 +18,9 @@ package org.springframework.up.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -26,10 +29,18 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Janne Valkealahti
  */
 @ConfigurationProperties(prefix = "spring.up")
+@JsonNaming(PropertyNamingStrategies.KebabCaseStrategy.class)
 public class UpCliProperties {
 
 	private Initializr initializr = new Initializr();
+
 	private Github github = new Github();
+
+	private List<TemplateCatalog> templateCatalogs = new ArrayList<>();
+
+	private List<TemplateRepository> templateRepositories = new ArrayList<>();
+
+	private Defaults defaults;
 
 	public Initializr getInitializr() {
 		return initializr;
@@ -47,9 +58,34 @@ public class UpCliProperties {
 		this.github = github;
 	}
 
+	public List<TemplateCatalog> getTemplateCatalogs() {
+		return templateCatalogs;
+	}
+
+	public void setTemplateCatalogs(List<TemplateCatalog> templateCatalogs) {
+		this.templateCatalogs = templateCatalogs;
+	}
+
+	public List<TemplateRepository> getTemplateRepositories() {
+		return templateRepositories;
+	}
+
+	public void setTemplateRepositories(List<TemplateRepository> templateRepositories) {
+		this.templateRepositories = templateRepositories;
+	}
+
+	public Defaults getDefaults() {
+		return defaults;
+	}
+
+	public void setDefaults(Defaults defaults) {
+		this.defaults = defaults;
+	}
+
 	/**
 	 * Settings for spring initializr.
 	 */
+	@JsonNaming(PropertyNamingStrategies.KebabCaseStrategy.class)
 	public static class Initializr {
 		private String baseUrl = "https://start.spring.io";
 
@@ -60,8 +96,16 @@ public class UpCliProperties {
 		public void setBaseUrl(String baseUrl) {
 			this.baseUrl = baseUrl;
 		}
+
+		@Override
+		public String toString() {
+			return "Initializr{" +
+					"baseUrl='" + baseUrl + '\'' +
+					'}';
+		}
 	}
 
+	@JsonNaming(PropertyNamingStrategies.KebabCaseStrategy.class)
 	public static class Github {
 
 		/**
@@ -90,42 +134,21 @@ public class UpCliProperties {
 		public void setDefaultScopes(String defaultScopes) {
 			this.defaultScopes = defaultScopes;
 		}
-	}
 
-	private List<TemplateCatalog> templateCatalogs = new ArrayList<>();
-
-	private List<TemplateRepository> templateRepositories = new ArrayList<>();
-
-	private Defaults defaults;
-
-	public List<TemplateCatalog> getTemplateCatalogs() {
-		return templateCatalogs;
-	}
-
-	public void setTemplateCatalogs(List<TemplateCatalog> templateCatalogs) {
-		this.templateCatalogs = templateCatalogs;
-	}
-
-	public List<TemplateRepository> getTemplateRepositories() {
-		return templateRepositories;
-	}
-
-	public void setTemplateRepositories(List<TemplateRepository> templateRepositories) {
-		this.templateRepositories = templateRepositories;
-	}
-
-	public Defaults getDefaults() {
-		return defaults;
-	}
-
-	public void setDefaults(Defaults defaults) {
-		this.defaults = defaults;
+		@Override
+		public String toString() {
+			return "Github{" +
+					"clientId='" + clientId + '\'' +
+					", defaultScopes='" + defaultScopes + '\'' +
+					'}';
+		}
 	}
 
 	@Override
 	public String toString() {
 		return "UpCliProperties{" +
 				"initializr=" + initializr +
+				", github=" + github +
 				", templateCatalogs=" + templateCatalogs +
 				", templateRepositories=" + templateRepositories +
 				", defaults=" + defaults +

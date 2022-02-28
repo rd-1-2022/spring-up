@@ -28,13 +28,20 @@ import org.springframework.util.StringUtils;
 public class PackageNameUtils {
 
 
-	public static String getPackageName(String packageName, String defaultPackageName) {
+	/**
+	 * Get the package name to use for the new project
+	 *
+	 * @param userProvidedPackageName The package name as passed into the cli command
+	 * @param defaultPackageName An optional fallback package name
+	 * @return The package name to use for the new project
+	 */
+	public static String getTargetPackageName(String userProvidedPackageName, String defaultPackageName) {
 
-		// Get target package name, fall back to default in property file
-		if (!StringUtils.hasText(packageName))  {
-			packageName = defaultPackageName;
+		// Get target package name, fall back to default
+		if (!StringUtils.hasText(userProvidedPackageName))  {
+			userProvidedPackageName = defaultPackageName;
 		}
-		String candidate = cleanPackageName(packageName);
+		String candidate = cleanPackageName(userProvidedPackageName);
 		if (!StringUtils.hasText(candidate)) {
 			return defaultPackageName;
 		}
