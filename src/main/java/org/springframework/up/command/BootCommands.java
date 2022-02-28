@@ -51,6 +51,7 @@ import org.springframework.up.git.SourceRepositoryService;
 import org.springframework.up.util.FileTypeCollectingFileVisitor;
 import org.springframework.up.util.IoUtils;
 import org.springframework.up.util.PackageNameUtils;
+import org.springframework.up.util.ProjectInfo;
 import org.springframework.up.util.PomReader;
 import org.springframework.up.util.ResultsExecutor;
 import org.springframework.up.util.RootPackageFinder;
@@ -152,12 +153,10 @@ public class BootCommands {
 		}
 
 		// Derive existing project name
-		Optional<String> existingProjectName = getExistingProjectName(repositoryContentsPath);
+		Optional<ProjectInfo> projectInfo = getProjectInfo(repositoryContentsPath);
+		logger.debug("Existing project = " + projectInfo);
 
-		logger.debug("Existing project name = " + existingProjectName);
 		// Copy files
-
-
 		File fromDir = repositoryContentsPath.toFile();
 		File toDir = createProjectDirectory(projectName);
 
@@ -174,28 +173,14 @@ public class BootCommands {
 			Tika tika = new Tika();
 			try {
 				FileUtils.getFileUtils().copyFile(srcFile, destFile);
-				if (existingProjectName.isPresent()) {
+				if (projectInfo.isPresent()) {
 					if (tika.detect(destFile).startsWith("text") || tika.detect(destFile).contains("xml")) {
 						List<String> replacedLines = new ArrayList<>();
 						List<String> originalLines = Files.readAllLines(destFile.toPath());
 						for (String originalLine : originalLines) {
-							boolean replaced = false;
-							if (existingProjectName.isPresent()) {
-								if (originalLine.contains(existingProjectName.get())) {
-									replaced = true;
-									// can only replace one token per line with this algorithm
-									String processedLine = originalLine.replace(existingProjectName.get(), projectName);
-									replacedLines.add(processedLine);
-									logger.debug("In file " + destFile.getAbsolutePath() + " replaced " + existingProjectName.get() + " with "
-											+ projectName);
-									logger.debug("Processed line = " + processedLine);
-								}
-								if (!replaced) {
-									replacedLines.add(originalLine);
-								}
-							}
-							Files.write(destFile.toPath(), replacedLines);
+							replaceString(projectName, projectInfo, destFile, replacedLines, originalLine);
 						}
+						Files.write(destFile.toPath(), replacedLines);
 					}
 					// set executable file system permissions if needed.
 					if (srcFile.canExecute()) {
@@ -208,27 +193,36 @@ public class BootCommands {
 			}
 		}
 
-//
-//		try {
-//			FileSystemUtils.copyRecursively(repositoryContentsPath.toFile(), toDir);
-//		}
-//		catch (IOException e) {
-//			throw new UpException("Could not copy files.", e);
-//		}
-
 		AttributedStringBuilder sb = new AttributedStringBuilder();
 		sb.append("Project " + projectName + " created.")
 				.style(sb.style().foreground(AttributedStyle.GREEN));
 		System.out.println(sb.toAnsi());
 	}
 
-	private Optional<String> getExistingProjectName(Path repositoryContentsPath) {
+	private void replaceString(String projectName, Optional<ProjectInfo> projectInfo, File destFile, List<String> replacedLines, String originalLine) {
+		boolean replaced = false;
+		if (originalLine.contains(projectInfo.get().getName())) {
+			replaced = true;
+			// can only replace one token per line with this algorithm
+			String processedLine = originalLine.replace(projectInfo.get().getName(), projectName);
+			replacedLines.add(processedLine);
+			logger.debug("In file " + destFile.getAbsolutePath() + " replaced " + projectInfo.get().getName() + " with "
+					+ projectName);
+			logger.debug("Processed line = " + processedLine);
+		}
+		if (!replaced) {
+			replacedLines.add(originalLine);
+		}
+	}
+
+	private Optional<ProjectInfo> getProjectInfo(Path repositoryContentsPath) {
 		File contentDirectory = repositoryContentsPath.toFile();
 		File pomFile = new File(contentDirectory, "pom.xml");
 		if (pomFile.exists()) {
 			PomReader pomReader = new PomReader();
 			Model model = pomReader.readPom(pomFile);
-			return Optional.of(model.getName());
+			ProjectInfo projectInfo = new ProjectInfo(model.getName(), model.getGroupId(), model.getArtifactId(), model.getVersion());
+			return Optional.of(projectInfo);
 		}
 		// TODO search settings.gradle
 		return Optional.empty();
@@ -244,7 +238,8 @@ public class BootCommands {
 	}
 
 	private Optional<String> getRootPackageName(Path workingPath) {
-		// Derive fromPackage using location of existing @SpringBootApplication class, hardcode for now
+		// Derive fromPackage using location of existing @SpringBootApplication class.
+		// TODO warning if find multiple @SpringBootApplication classes.
 		RootPackageFinder rootPackageFinder = new RootPackageFinder();
 		logger.debug("Looking for @SpringBootApplication in directory " + workingPath.toFile());
 		Optional<String> rootPackage = rootPackageFinder.findRootPackage(workingPath.toFile());
