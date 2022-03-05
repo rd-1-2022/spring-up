@@ -24,10 +24,15 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
+import org.kohsuke.github.GHCommit;
+import org.kohsuke.github.GHLicense;
 import org.kohsuke.github.GHMyself;
 import org.kohsuke.github.GHObject;
 import org.kohsuke.github.GHPerson;
+import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHUser;
+import org.kohsuke.github.GHVerification;
+import org.kohsuke.github.GitUser;
 
 import org.springframework.nativex.hint.FieldHint;
 import org.springframework.nativex.hint.JdkProxyHint;
@@ -68,13 +73,21 @@ import org.springframework.up.initializr.model.ProjectType.ProjectTypeValue;
  * @author Janne Valkealahti
  */
 @NativeHint(
-	resources = @ResourceHint(
-		patterns = {
-			"completion/.*",
-			"template/.*.st",
-			"org/springframework/shell/component/.*.stg",
-			"com/sun/jna/win32-x86-64/jnidispatch.dll"
-		}),
+	options = {
+		// https://github.com/rd-1-2022/spring-up/issues/14
+		"-H:+AllowJRTFileSystem"
+	},
+	resources = {
+		@ResourceHint(
+			patterns = {
+				"completion/.*",
+				"template/.*.st",
+				"org/springframework/shell/component/.*.stg",
+				"com/sun/jna/win32-x86-64/jnidispatch.dll",
+				"org/apache/tika/mime/tika-mimetypes.xml"
+			}
+		),
+	},
 	types = {
 		@TypeHint(
 			types = {
@@ -228,7 +241,17 @@ import org.springframework.up.initializr.model.ProjectType.ProjectTypeValue;
 			}
 		),
 		@TypeHint(
-			types = { GHMyself.class, GHObject.class, GHPerson.class, GHUser.class },
+			typeNames = "org.kohsuke.github.GitHubInteractiveObject",
+			access = {
+				TypeAccess.PUBLIC_CONSTRUCTORS, TypeAccess.DECLARED_CLASSES, TypeAccess.DECLARED_CONSTRUCTORS,
+				TypeAccess.DECLARED_FIELDS, TypeAccess.DECLARED_METHODS
+			}
+		),
+		@TypeHint(
+			types = {
+				GHMyself.class, GHObject.class, GHPerson.class, GHUser.class, GHCommit.class, GHLicense.class,
+				GHRepository.class, GHVerification.class, GitUser.class
+			},
 			access = {
 				TypeAccess.PUBLIC_CONSTRUCTORS, TypeAccess.DECLARED_CLASSES, TypeAccess.DECLARED_CONSTRUCTORS,
 				TypeAccess.DECLARED_FIELDS, TypeAccess.DECLARED_METHODS
