@@ -26,19 +26,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.shell.component.flow.ComponentFlow;
+import org.springframework.shell.component.flow.ResultMode;
+import org.springframework.shell.component.flow.ComponentFlow.ComponentFlowResult;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 import org.springframework.shell.style.ThemeSettings;
 import org.springframework.up.support.AbstractUpCliCommands;
-import org.springframework.up.support.ComponentFlow;
-import org.springframework.up.support.ComponentFlow.ComponentFlowResult;
-import org.springframework.up.support.ComponentFlow.ResultMode;
 import org.springframework.up.support.UpCliUserConfig;
 import org.springframework.up.support.UpCliUserConfig.Host;
 import org.springframework.up.support.UpCliUserConfig.Hosts;
 import org.springframework.up.support.github.GithubDeviceFlow;
-import org.springframework.up.support.Wizard;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -54,6 +53,9 @@ public class GithubCommands extends AbstractUpCliCommands {
 
 	@Autowired
 	private WebClient.Builder webClientBuilder;
+
+	@Autowired
+	private ComponentFlow.Builder componentFlowBuilder;
 
 	@Autowired
 	private UpCliUserConfig userConfig;
@@ -164,9 +166,7 @@ public class GithubCommands extends AbstractUpCliCommands {
 		Map<String, String> authType = new HashMap<>();
 		authType.put("Login with a web browser", "web");
 		authType.put("Paste an authentication token", "paste");
-		Wizard<ComponentFlowResult> wizard = ComponentFlow.builder(getTerminal())
-				.resourceLoader(getResourceLoader())
-				.templateExecutor(getTemplateExecutor())
+		ComponentFlow wizard = componentFlowBuilder.clone().reset()
 				.withSingleItemSelector("authType")
 					.name("How would you like to authenticate GitHub CLI")
 					.resultMode(ResultMode.ACCEPT)
@@ -183,7 +183,7 @@ public class GithubCommands extends AbstractUpCliCommands {
 	 * @return token user gave
 	 */
 	private String askToken() {
-		Wizard<ComponentFlowResult> wizard = ComponentFlow.builder(getTerminal())
+		ComponentFlow wizard = componentFlowBuilder.clone().reset()
 				.resourceLoader(getResourceLoader())
 				.templateExecutor(getTemplateExecutor())
 				.withStringInput("token")

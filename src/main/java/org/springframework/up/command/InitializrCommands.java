@@ -28,14 +28,16 @@ import org.rauschig.jarchivelib.Archiver;
 import org.rauschig.jarchivelib.ArchiverFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.shell.component.context.ComponentContext;
+import org.springframework.shell.component.flow.ComponentFlow;
+import org.springframework.shell.component.flow.ResultMode;
+import org.springframework.shell.component.flow.SelectItem;
+import org.springframework.shell.component.flow.ComponentFlow.ComponentFlowResult;
 import org.springframework.shell.component.support.SelectorItem;
 import org.springframework.shell.standard.AbstractShellComponent;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
-import org.springframework.shell.style.TemplateExecutor;
 import org.springframework.shell.table.ArrayTableModel;
 import org.springframework.shell.table.BorderStyle;
 import org.springframework.shell.table.Table;
@@ -44,11 +46,6 @@ import org.springframework.shell.table.TableModel;
 import org.springframework.up.initializr.InitializrClient;
 import org.springframework.up.initializr.InitializrUtils;
 import org.springframework.up.initializr.model.Metadata;
-import org.springframework.up.support.ComponentFlow;
-import org.springframework.up.support.ComponentFlow.ComponentFlowResult;
-import org.springframework.up.support.Wizard;
-import org.springframework.up.support.ComponentFlow.ResultMode;
-import org.springframework.up.support.ComponentFlow.SelectItem;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -105,10 +102,7 @@ public class InitializrCommands extends AbstractShellComponent {
 	private InitializrClient client;
 
 	@Autowired
-	private ResourceLoader resourceLoader;
-
-	@Autowired
-	private TemplateExecutor templateExecutor;
+	private ComponentFlow.Builder componentFlowBuilder;
 
 	@ShellMethod(key = "initializr new", value = "Create a new project from start.spring.io")
 	public String init(
@@ -147,9 +141,7 @@ public class InitializrCommands extends AbstractShellComponent {
 		Map<String, String> javaVersionSelectItems = metadata.getJavaVersion().getValues().stream()
 				.collect(Collectors.toMap(v -> v.getName(), v -> v.getId()));
 
-		Wizard<ComponentFlowResult> wizard = ComponentFlow.builder(getTerminal())
-				.resourceLoader(resourceLoader)
-				.templateExecutor(templateExecutor)
+		ComponentFlow wizard = componentFlowBuilder.clone().reset()
 				.withPathInput(PATH_ID)
 					.name(PATH_NAME)
 					.resultValue(path)
