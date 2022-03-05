@@ -40,6 +40,9 @@ jobs:
           - nickname: linux
             os: ubuntu-latest
             graal: 22.0.0.2
+          - nickname: linux-dev
+            os: ubuntu-latest
+            graal: 22.0.0.2
     name: CI Native ${{ matrix.graal }} on ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2

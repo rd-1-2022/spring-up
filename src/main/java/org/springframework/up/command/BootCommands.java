@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.apache.maven.model.Model;
 import org.apache.tika.Tika;
@@ -32,6 +33,7 @@ import org.codehaus.plexus.util.DirectoryScanner;
 import org.jetbrains.annotations.Nullable;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.SourceFile;
 import org.openrewrite.java.ChangePackage;
@@ -296,7 +298,11 @@ public class BootCommands {
 		catch (IOException e) {
 			throw new UpException("Failed reading files in " + workingPath, e);
 		}
-		List<? extends SourceFile> compilationUnits = javaParser.parse(collector.getMatches(), null, null);
+		Consumer<Throwable> onError = e -> {
+			logger.error("error in javaParser execution", e);
+		};
+		InMemoryExecutionContext executionContext = new InMemoryExecutionContext(onError);
+		List<? extends SourceFile> compilationUnits = javaParser.parse(collector.getMatches(), null, executionContext);
 		ResultsExecutor container = new ResultsExecutor();
 
 		Recipe recipe = new ChangePackage(fromPackage, targetPackageName, true);
