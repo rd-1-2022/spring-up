@@ -75,7 +75,10 @@ import org.springframework.up.initializr.model.ProjectType.ProjectTypeValue;
 @NativeHint(
 	options = {
 		// https://github.com/rd-1-2022/spring-up/issues/14
-		"-H:+AllowJRTFileSystem"
+		"-H:+AllowJRTFileSystem",
+		// Attempt to make win not to fail fast
+		"-H:-DeadlockWatchdogExitOnTimeout",
+		"-H:DeadlockWatchdogInterval=0"
 	},
 	resources = {
 		@ResourceHint(
