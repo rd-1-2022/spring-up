@@ -35,9 +35,16 @@ out/
 /nbdist/
 /.nb-gradle/
 
-# Visual Studio Code
+# Visual Studio Code - java
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# Visual Studio Code - e2e node
+e2e/.vscode/*
+!e2e/.vscode/settings.json
+!e2e/.vscode/tasks.json
+!e2e/.vscode/launch.json
+!e2e/.vscode/extensions.json
