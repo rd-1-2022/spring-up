@@ -1,13 +1,16 @@
 import * as fs from 'fs';
 import { rmRF, mkdirP } from '@actions/io';
 import 'jest-extended';
-import { sleep, tempDir, cliPath } from '../src/utils';
+import waitForExpect from 'wait-for-expect';
+import { tempDir, cliPath } from '../src/utils';
 import { Cli } from '../src/cli';
 
 describe('builtin commands', () => {
   let cli: Cli;
 
   beforeEach(async () => {
+    waitForExpect.defaults.timeout = 3000;
+    waitForExpect.defaults.interval = 100;
     await rmRF(tempDir);
     await mkdirP(tempDir);
     expect(fs.existsSync(cliPath)).toBe(true);
@@ -29,9 +32,11 @@ describe('builtin commands', () => {
     });
 
     cli.run();
-    await sleep(1000);
-    const screen = cli.screen();
+
     const expected = [expect.stringMatching('Build Version'), expect.stringMatching('Git Short Commit Id')];
-    expect(screen).toEqual(expect.arrayContaining(expected));
+    await waitForExpect(async () => {
+      const screen = cli.screen();
+      expect(screen).toEqual(expect.arrayContaining(expected));
+    });
   });
 });
