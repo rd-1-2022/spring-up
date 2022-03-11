@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package org.springframework.up.command;
 
 import java.io.File;
@@ -49,6 +47,7 @@ import org.springframework.shell.standard.ShellOption;
 import org.springframework.up.UpException;
 import org.springframework.up.config.TemplateRepository;
 import org.springframework.up.git.SourceRepositoryService;
+import org.springframework.up.support.AbstractUpCliCommands;
 import org.springframework.up.support.UpCliUserConfig;
 import org.springframework.up.util.FileTypeCollectingFileVisitor;
 import org.springframework.up.util.IoUtils;
@@ -60,7 +59,7 @@ import org.springframework.up.util.RootPackageFinder;
 import org.springframework.util.StringUtils;
 
 @ShellComponent
-public class BootCommands {
+public class BootCommands extends AbstractUpCliCommands {
 
 	private static final Logger logger = LoggerFactory.getLogger(BootCommands.class);
 
@@ -132,7 +131,7 @@ public class BootCommands {
 		AttributedStringBuilder sb = new AttributedStringBuilder();
 		sb.style(sb.style().foreground(AttributedStyle.YELLOW));
 		sb.append("No default runnable project template name defined in the Spring Up configuration file.  Falling back to " + DEFAULT_REPO_URL);
-		System.out.println(sb.toAnsi());
+		shellPrint(sb.toAttributedString());
 		return DEFAULT_REPO_URL;
 	}
 
@@ -230,7 +229,7 @@ public class BootCommands {
 		AttributedStringBuilder sb = new AttributedStringBuilder();
 		sb.style(sb.style().foreground(AttributedStyle.GREEN));
 		sb.append("Project " + projectName + " created.");
-		System.out.println(sb.toAnsi());
+		shellPrint(sb.toAttributedString());
 	}
 
 	private void replaceString(String projectName, Optional<ProjectInfo> projectInfo, File destFile, List<String> replacedLines, String originalLine) {
@@ -281,7 +280,7 @@ public class BootCommands {
 			AttributedStringBuilder sb = new AttributedStringBuilder();
 			sb.style(sb.style().foreground(AttributedStyle.YELLOW));
 			sb.append("Could find root package containing class with @SpringBootApplication.  No Java Package refactoring from the template will occur.");
-			System.out.println(sb.toAnsi());
+			shellPrint(sb.toAttributedString());
 			return Optional.empty();
 		}
 
