@@ -1,4 +1,10 @@
 {
+    "files.exclude": {
+        "**/.vscode": true,
+        "bin": true,
+        "gradle": true,
+        "e2e": true
+    },
     "java.completion.importOrder": [
         "java",
         "javax",
