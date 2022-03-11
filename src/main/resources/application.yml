@@ -8,10 +8,10 @@ spring:
         root-command: spring-up
       version:
         show-git-short-commit-id: true
-#  up:
-#    github:
-#      client-id: 10a18d1837ecdac59ba2
-#      default-scopes: repo,read:org
+  up:
+    github:
+      client-id: 10a18d1837ecdac59ba2
+      default-scopes: repo,read:org
 #    templateCatalogs:
 #      - name: catalog1
 #        description: The first catalog
