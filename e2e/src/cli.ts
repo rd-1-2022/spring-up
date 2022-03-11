@@ -57,7 +57,7 @@ export class Cli {
     return ret;
   }
 
-  public async keyText(data: string, wait: number): Promise<Cli> {
+  public async keyText(data: string, wait?: number): Promise<Cli> {
     this.pty?.write(data);
     await this.doWait(wait);
     return this;
