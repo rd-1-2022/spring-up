@@ -5,13 +5,14 @@ import 'jest-extended';
 import waitForExpect from 'wait-for-expect';
 import { tempDir, cliPath } from '../src/utils';
 import { Cli } from '../src/cli';
+import { waitForExpectTimeout, waitForExpectInterval } from '../src/constans';
 
 describe('initializr non-interactive commands', () => {
   let cli: Cli;
 
   beforeEach(async () => {
-    waitForExpect.defaults.timeout = 3000;
-    waitForExpect.defaults.interval = 100;
+    waitForExpect.defaults.timeout = waitForExpectTimeout;
+    waitForExpect.defaults.interval = waitForExpectInterval;
     await rmRF(tempDir);
     await mkdirP(tempDir);
     expect(fs.existsSync(cliPath)).toBe(true);
@@ -93,8 +94,8 @@ describe('initializr interactive commands', () => {
   let cli: Cli;
 
   beforeEach(async () => {
-    waitForExpect.defaults.timeout = 3000;
-    waitForExpect.defaults.interval = 100;
+    waitForExpect.defaults.timeout = waitForExpectTimeout;
+    waitForExpect.defaults.interval = waitForExpectInterval;
     await rmRF(tempDir);
     await mkdirP(tempDir);
     expect(fs.existsSync(cliPath)).toBe(true);
@@ -113,9 +114,7 @@ describe('initializr interactive commands', () => {
     const demoDir = path.join(tempDir, 'demo');
     cli = new Cli({
       command: cliPath,
-      options: [
-        'initializr new'
-      ]
+      options: ['initializr new']
     });
 
     cli.run();
@@ -167,9 +166,7 @@ describe('initializr interactive commands', () => {
     const demoDir = path.join(tempDir, 'demo');
     cli = new Cli({
       command: cliPath,
-      options: [
-        'initializr new'
-      ]
+      options: ['initializr new']
     });
 
     cli.run();
