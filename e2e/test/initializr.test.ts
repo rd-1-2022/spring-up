@@ -56,7 +56,7 @@ describe('initializr non-interactive commands', () => {
     await waitForExpect(async () => {
       expect(fs.existsSync(buildFile)).toBe(true);
     });
-  });
+  }, 20000);
 
   it('create gradle project', async () => {
     const demoDir = path.join(tempDir, 'demo');
@@ -87,7 +87,7 @@ describe('initializr non-interactive commands', () => {
     await waitForExpect(async () => {
       expect(fs.existsSync(buildFile)).toBe(true);
     });
-  });
+  }, 20000);
 });
 
 describe('initializr interactive commands', () => {
