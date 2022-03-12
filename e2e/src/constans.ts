@@ -1,2 +1,2 @@
-export const waitForExpectTimeout = 5000;
+export const waitForExpectTimeout = 15000;
 export const waitForExpectInterval = 100;
