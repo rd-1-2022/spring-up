@@ -3,7 +3,7 @@ import * as path from 'path';
 import { rmRF, mkdirP } from '@actions/io';
 import 'jest-extended';
 import waitForExpect from 'wait-for-expect';
-import { tempDir, cliPath } from '../src/utils';
+import { tempDir, cliPath, sleep } from '../src/utils';
 import { Cli } from '../src/cli';
 import { waitForExpectTimeout, waitForExpectInterval } from '../src/constans';
 
@@ -153,12 +153,16 @@ describe('initializr interactive commands', () => {
     // packaging
     await cli.keyEnter();
     // java
-    await cli.keyDown();
+    await cli.keyUp();
     await cli.keyEnter();
 
     const buildFile = path.join(demoDir, 'pom.xml');
     await waitForExpect(async () => {
       expect(fs.existsSync(buildFile)).toBe(true);
+    });
+    await waitForExpect(async () => {
+      const content = fs.readFileSync(buildFile).toString();
+      expect(content).toContain('<java.version>17</java.version>');
     });
   }, 20000);
 
@@ -204,12 +208,16 @@ describe('initializr interactive commands', () => {
     // packaging
     await cli.keyEnter();
     // java
-    await cli.keyDown();
+    await cli.keyUp();
     await cli.keyEnter();
 
     const buildFile = path.join(demoDir, 'build.gradle');
     await waitForExpect(async () => {
       expect(fs.existsSync(buildFile)).toBe(true);
+    });
+    await waitForExpect(async () => {
+      const content = fs.readFileSync(buildFile).toString();
+      expect(content).toContain('sourceCompatibility = \'17\'');
     });
   }, 20000);
 });
