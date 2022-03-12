@@ -28,7 +28,6 @@ import org.apache.maven.model.Model;
 import org.apache.tika.Tika;
 import org.apache.tools.ant.util.FileUtils;
 import org.codehaus.plexus.util.DirectoryScanner;
-import org.jetbrains.annotations.Nullable;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.openrewrite.InMemoryExecutionContext;
@@ -41,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
@@ -154,6 +154,7 @@ public class BootCommands extends AbstractUpCliCommands {
 		// get the final package name to use taking into account default value and validity of that value from the JLS
 		return PackageNameUtils.getTargetPackageName(packageName, defaultPackageName);
 	}
+
 	@Nullable
 	private String findTemplateUrl(String templateName) {
 		if (this.upCliUserConfig.getUpCliProperties() != null) {
