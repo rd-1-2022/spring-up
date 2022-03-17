@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -45,10 +46,10 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 import org.springframework.up.UpException;
-import org.springframework.up.config.TemplateRepository;
 import org.springframework.up.git.SourceRepositoryService;
 import org.springframework.up.support.AbstractUpCliCommands;
 import org.springframework.up.support.UpCliUserConfig;
+import org.springframework.up.support.UpCliUserConfig.TemplateRepository;
 import org.springframework.up.util.FileTypeCollectingFileVisitor;
 import org.springframework.up.util.IoUtils;
 import org.springframework.up.util.PackageNameUtils;
@@ -62,10 +63,6 @@ import org.springframework.util.StringUtils;
 public class BootCommands extends AbstractUpCliCommands {
 
 	private static final Logger logger = LoggerFactory.getLogger(BootCommands.class);
-
-	private static final String DEFAULT_PROJECT_NAME = "demo";
-
-	private static final String DEFAULT_PACKAGE_NAME = "com.example";
 
 	private static final String DEFAULT_REPO_URL = "https://github.com/rd-1-2022/rpt-spring-data-jpa";
 
@@ -95,14 +92,7 @@ public class BootCommands extends AbstractUpCliCommands {
 		if (StringUtils.hasText(projectName)) {
 			return projectName;
 		}
-		if (this.upCliUserConfig.getUpCliProperties() != null && this.upCliUserConfig.getUpCliProperties().getDefaults() != null) {
-			String defaultProjectName = this.upCliUserConfig.getUpCliProperties().getDefaults().getProjectName();
-			if (StringUtils.hasText(defaultProjectName)) {
-				return defaultProjectName;
-			}
-		}
-		// The last resort default project name
-		return DEFAULT_PROJECT_NAME;
+		return getCliProperties().getDefaults().getProjectName();
 	}
 
 	@Nullable
@@ -119,13 +109,6 @@ public class BootCommands extends AbstractUpCliCommands {
 				return findTemplateUrl(templateName);
 			}
 		}
-		// no cli argument specified for template name, fall back to configuration provided default name if available
-		if (this.upCliUserConfig.getUpCliProperties() != null && this.upCliUserConfig.getUpCliProperties().getDefaults() != null) {
-			String defaultTemplateName = this.upCliUserConfig.getUpCliProperties().getDefaults().getTemplateRepositoryName();
-			if (StringUtils.hasText(defaultTemplateName)) {
-				return findTemplateUrl(defaultTemplateName);
-			}
-		}
 
 		// no default template name found
 		AttributedStringBuilder sb = new AttributedStringBuilder();
@@ -136,20 +119,12 @@ public class BootCommands extends AbstractUpCliCommands {
 	}
 
 	private String getPackageName(String packageName) {
-		String defaultPackageName = null;
-		// look for default package name defined in config file
-		if (this.upCliUserConfig.getUpCliProperties() != null && this.upCliUserConfig.getUpCliProperties().getDefaults() != null) {
-			String candidatePackageName = this.upCliUserConfig.getUpCliProperties().getDefaults().getPackageName();
-			if (StringUtils.hasText(candidatePackageName)) {
-				defaultPackageName = candidatePackageName;
-			}
+		String defaultPackageName = packageName;
+		if (defaultPackageName == null) {
+			defaultPackageName = getCliProperties().getDefaults().getPackageName();
 		}
-		// if no user defined default, use
-		if (!StringUtils.hasText(defaultPackageName)) {
-			AttributedStringBuilder sb = new AttributedStringBuilder();
-			sb.style(sb.style().foreground(AttributedStyle.YELLOW));
-			sb.append("Using default package name " + DEFAULT_PACKAGE_NAME);
-			defaultPackageName = DEFAULT_PACKAGE_NAME;
+		if (defaultPackageName == null) {
+			throw new UpException("Unable to find package name to use");
 		}
 		// get the final package name to use taking into account default value and validity of that value from the JLS
 		return PackageNameUtils.getTargetPackageName(packageName, defaultPackageName);
@@ -157,8 +132,8 @@ public class BootCommands extends AbstractUpCliCommands {
 
 	@Nullable
 	private String findTemplateUrl(String templateName) {
-		if (this.upCliUserConfig.getUpCliProperties() != null) {
-			List<TemplateRepository> templateRepositories = this.upCliUserConfig.getUpCliProperties().getTemplateRepositories();
+		Collection<TemplateRepository> templateRepositories = upCliUserConfig.getTemplateRepositoriesConfig().getTemplateRepositories();
+		if (templateRepositories != null) {
 			for (TemplateRepository templateRepository : templateRepositories) {
 				if (templateName.trim().equalsIgnoreCase(templateRepository.getName().trim())) {
 					// match - get url

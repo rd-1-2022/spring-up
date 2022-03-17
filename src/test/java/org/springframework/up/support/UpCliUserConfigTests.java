@@ -17,7 +17,9 @@ package org.springframework.up.support;
 
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -39,8 +41,11 @@ public class UpCliUserConfigTests {
 	}
 
 	@Test
-	public void test() {
+	public void testHosts() {
 		UpCliUserConfig config = new UpCliUserConfig(pathProvider);
+
+		assertThat(config.getHosts()).isNull();
+
 		UpCliUserConfig.Hosts hosts = new UpCliUserConfig.Hosts();
 		Map<String, UpCliUserConfig.Host> hostsMap = new HashMap<>();
 		hostsMap.put("github.com", new UpCliUserConfig.Host("faketoken", "user"));
@@ -49,5 +54,39 @@ public class UpCliUserConfigTests {
 		assertThat(config.getHosts()).isNotNull();
 		assertThat(config.getHosts().get("github.com")).isNotNull();
 		assertThat(config.getHosts().get("github.com").getOauthToken()).isEqualTo("faketoken");
+	}
+
+	@Test
+	public void testTemplateCatalogs() {
+		UpCliUserConfig config = new UpCliUserConfig(pathProvider);
+
+		assertThat(config.getTemplateCatalogsConfig()).isNotNull();
+
+		UpCliUserConfig.TemplateCatalogs catalogs = new UpCliUserConfig.TemplateCatalogs();
+		List<UpCliUserConfig.TemplateCatalog> catalogList = new ArrayList<>();
+		UpCliUserConfig.TemplateCatalog catalog1 = new UpCliUserConfig.TemplateCatalog("fakename1", "fakedesc1", "fakeurl1");
+		UpCliUserConfig.TemplateCatalog catalog2 = new UpCliUserConfig.TemplateCatalog("fakename2", "fakedesc2", "fakeurl2");
+		catalogList.add(catalog1);
+		catalogList.add(catalog2);
+		catalogs.setTemplateCatalogs(catalogList);
+		config.setTemplateCatalogsConfig(catalogs);
+		assertThat(config.getTemplateCatalogsConfig().getTemplateCatalogs()).hasSize(2);
+	}
+
+	@Test
+	public void testTemplateRepositories() {
+		UpCliUserConfig config = new UpCliUserConfig(pathProvider);
+
+		assertThat(config.getTemplateRepositoriesConfig()).isNotNull();
+
+		UpCliUserConfig.TemplateRepositories repositories = new UpCliUserConfig.TemplateRepositories();
+		List<UpCliUserConfig.TemplateRepository> repositoryList = new ArrayList<>();
+		UpCliUserConfig.TemplateRepository repository1 = new UpCliUserConfig.TemplateRepository("fakename1", "fakedesc1", "fakeurl1", new ArrayList<>());
+		UpCliUserConfig.TemplateRepository repository2 = new UpCliUserConfig.TemplateRepository("fakename2", "fakedesc2", "fakeurl2", new ArrayList<>());
+		repositoryList.add(repository1);
+		repositoryList.add(repository2);
+		repositories.setTemplateRepositories(repositoryList);
+		config.setTemplateRepositoriesConfig(repositories);
+		assertThat(config.getTemplateRepositoriesConfig().getTemplateRepositories()).hasSize(2);
 	}
 }

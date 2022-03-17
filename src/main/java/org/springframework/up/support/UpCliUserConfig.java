@@ -16,12 +16,17 @@
 package org.springframework.up.support;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
-import org.springframework.up.config.UpCliProperties;
 import org.springframework.up.support.configfile.UserConfig;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Cli access point for user level stored settings.
@@ -40,7 +45,15 @@ public class UpCliUserConfig {
 	 */
 	public final static String HOSTS = "hosts.yml";
 
-	public final static String UP_CLI_PROPERTIES = "springup.yml";
+	/**
+	 * {@code catalogs.yml} stores template catalog spesific info.
+	 */
+	public final static String TEMPLATE_CATALOGS = "catalogs.yml";
+
+	/**
+	 * {@code repositories.yml} stores template repository spesific info.
+	 */
+	public final static String TEMPLATE_REPOSITORIES = "repositories.yml";
 
 	/**
 	 * Base directory name we store our config files.
@@ -52,7 +65,15 @@ public class UpCliUserConfig {
 	 */
 	private final UserConfig<Hosts> hostsConfigFile;
 
-	private final UserConfig<UpCliProperties> upCliPropertiesUserConfig;
+	/**
+	 * Keeps template catalogs as list.
+	 */
+	private final UserConfig<TemplateCatalogs> templateCatalogsConfigFile;
+
+	/**
+	 * Keeps template repositories as list.
+	 */
+	private final UserConfig<TemplateRepositories> templateRepositoriesConfigFile;
 
 	public UpCliUserConfig() {
 		this(null);
@@ -60,17 +81,15 @@ public class UpCliUserConfig {
 
 	public UpCliUserConfig(Function<String, Path> pathProvider) {
 		this.hostsConfigFile = new UserConfig<>(HOSTS, Hosts.class, SPRINGUP_CONFIG_DIR, SPRINGUP_CONFIG_NAME);
+		this.templateCatalogsConfigFile = new UserConfig<>(TEMPLATE_CATALOGS, TemplateCatalogs.class,
+				SPRINGUP_CONFIG_DIR, SPRINGUP_CONFIG_NAME);
+		this.templateRepositoriesConfigFile = new UserConfig<>(TEMPLATE_REPOSITORIES, TemplateRepositories.class,
+				SPRINGUP_CONFIG_DIR, SPRINGUP_CONFIG_NAME);
 		if (pathProvider != null) {
 			this.hostsConfigFile.setPathProvider(pathProvider);
+			this.templateCatalogsConfigFile.setPathProvider(pathProvider);
+			this.templateRepositoriesConfigFile.setPathProvider(pathProvider);
 		}
-		this.upCliPropertiesUserConfig = new UserConfig<>(UP_CLI_PROPERTIES, UpCliProperties.class, SPRINGUP_CONFIG_DIR, SPRINGUP_CONFIG_NAME);
-		if (pathProvider != null) {
-			this.upCliPropertiesUserConfig.setPathProvider(pathProvider);
-		}
-	}
-
-	public UpCliProperties getUpCliProperties() {
-		return this.upCliPropertiesUserConfig.getConfig();
 	}
 
 	/**
@@ -113,6 +132,44 @@ public class UpCliUserConfig {
 		hostsMap.put(key, host);
 		hosts.setHosts(hostsMap);
 		setHosts(hosts);
+	}
+
+	/**
+	 * Get template catalogs.
+	 *
+	 * @return template catalogs
+	 */
+	public TemplateCatalogs getTemplateCatalogsConfig() {
+		TemplateCatalogs catalogs = templateCatalogsConfigFile.getConfig();
+		return catalogs != null ? catalogs : new TemplateCatalogs();
+	}
+
+	/**
+	 * Sets template catalogs
+	 *
+	 * @param templateCatalogs the template catalogs
+	 */
+	public void setTemplateCatalogsConfig(TemplateCatalogs templateCatalogs) {
+		templateCatalogsConfigFile.setConfig(templateCatalogs);
+	}
+
+	/**
+	 * Get template repositories.
+	 *
+	 * @return template repositories
+	 */
+	public TemplateRepositories getTemplateRepositoriesConfig() {
+		TemplateRepositories repositories = templateRepositoriesConfigFile.getConfig();
+		return repositories != null ? repositories : new TemplateRepositories();
+	}
+
+	/**
+	 * Sets template repositories.
+	 *
+	 * @param templateRepositories
+	 */
+	public void setTemplateRepositoriesConfig(TemplateRepositories templateRepositories) {
+		templateRepositoriesConfigFile.setConfig(templateRepositories);
 	}
 
 	public static class Hosts {
@@ -160,5 +217,123 @@ public class UpCliUserConfig {
 		public void setUser(String user) {
 			this.user = user;
 		}
+	}
+
+	public abstract static class BaseTemplateCommon {
+
+		private String name;
+		private String description;
+		private String url;
+
+		BaseTemplateCommon() {
+		}
+
+		BaseTemplateCommon(String name, String description, String url) {
+			this.name = name;
+			this.description = description;
+			this.url = url;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getDescription() {
+			return description;
+		}
+
+		public void setDescription(String description) {
+			this.description = description;
+		}
+
+		public String getUrl() {
+			return url;
+		}
+
+		public void setUrl(String url) {
+			this.url = url;
+		}
+	}
+
+	public static class TemplateCatalogs {
+
+		private List<TemplateCatalog> templateCatalogs = new ArrayList<>();
+
+		public List<TemplateCatalog> getTemplateCatalogs() {
+			return templateCatalogs;
+		}
+
+		public void setTemplateCatalogs(List<TemplateCatalog> templateCatalogs) {
+			this.templateCatalogs = templateCatalogs;
+		}
+	}
+
+	public static class TemplateRepositories {
+
+		private List<TemplateRepository> templateRepositories = new ArrayList<>();
+
+		public List<TemplateRepository> getTemplateRepositories() {
+			return templateRepositories;
+		}
+
+		public void setTemplateRepositories(List<TemplateRepository> templateRepositories) {
+			this.templateRepositories.clear();
+			this.templateRepositories.addAll(templateRepositories);
+		}
+
+		public Optional<TemplateRepository> findByName(String name) {
+			return this.templateRepositories.stream()
+				.filter(t -> ObjectUtils.nullSafeEquals(t.getName(), name))
+				.findFirst();
+		}
+
+		public void setTemplateRepository(TemplateRepository templateRepository) {
+			templateRepositories.add(templateRepository);
+		}
+	}
+
+	public static class TemplateCatalog extends BaseTemplateCommon {
+
+		public TemplateCatalog() {
+		}
+
+		public TemplateCatalog(String name, String description, String url) {
+			super(name, description, url);
+		}
+
+		public static TemplateCatalog of(String name, String description, String url) {
+			return new TemplateCatalog(name, description, url);
+		}
+	}
+
+	public static class TemplateRepository extends BaseTemplateCommon {
+
+		private List<String> tags = new ArrayList<>();
+
+		public TemplateRepository() {
+		}
+
+		public TemplateRepository(String name, String description, String url, List<String> tags) {
+			super(name, description, url);
+			this.tags = tags;
+		}
+
+		public static TemplateRepository of (String name, String description, String url, List<String> tags) {
+			return new TemplateRepository(name, description, url, tags);
+		}
+
+		public List<String> getTags() {
+			return tags;
+		}
+
+		public void setTags(List<String> tags) {
+			this.tags = tags;
+		}
+
+
 	}
 }

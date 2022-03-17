@@ -22,12 +22,20 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 public class YamlConfigFile implements ConfigFile {
 
-	private ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+	private final ObjectMapper mapper;
+
+	public YamlConfigFile() {
+		mapper = new ObjectMapper(new YAMLFactory());
+		mapper.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	}
 
 	@Override
 	public <T> T read(Path path, Class<T> type) {
